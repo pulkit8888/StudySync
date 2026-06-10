@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>StudySync</title>
+    <style>
+      :root { color-scheme: light; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+        margin: 0; width: 320px; background: #fff; color: #0f172a;
+      }
+      .h { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid #eef0f3; }
+      .logo { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg,#3b82f6,#6366f1); color: #fff; display: grid; place-items: center; font-weight: 600; font-size: 11px; }
+      .title { font-weight: 600; font-size: 13px; }
+      .body { padding: 12px 14px; }
+      .row { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+      .row:hover { background: #f5f6f8; }
+      .row .hint { margin-left: auto; font-size: 11px; color: #6b7280; }
+      .foot { padding: 8px 14px; border-top: 1px solid #eef0f3; font-size: 11px; color: #6b7280; }
+    </style>
+  </head>
+  <body>
+    <div class="h">
+      <div class="logo">S</div>
+      <div class="title">StudySync</div>
+    </div>
+    <div class="body">
+      <div class="row" id="ai">✨ <span>AI Summary</span><span class="hint">Generate</span></div>
+      <div class="row" id="bm">🔖 <span>Bookmark</span><span class="hint">Save</span></div>
+    </div>
+    <div class="foot">Select text on a page, then open StudySync.</div>
+    <script src="popup.js"></script>
+  </body>
+</html>
