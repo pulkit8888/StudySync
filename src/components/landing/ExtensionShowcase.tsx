@@ -63,8 +63,16 @@ export function ExtensionShowcase() {
           <ul className="mt-8 space-y-4">
             {[
               { icon: Sparkles, t: "AI Summary", d: "Topic-aware bullets in under a second." },
-              { icon: BookmarkPlus, t: "Bookmark", d: "Save into an existing topic or create a new one." },
-              { icon: FolderPlus, t: "Build your knowledge", d: "Every highlight compounds into a structured library." },
+              {
+                icon: BookmarkPlus,
+                t: "Bookmark",
+                d: "Save into an existing topic or create a new one.",
+              },
+              {
+                icon: FolderPlus,
+                t: "Build your knowledge",
+                d: "Every highlight compounds into a structured library.",
+              },
             ].map((item) => (
               <li key={item.t} className="flex items-start gap-3">
                 <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border bg-card text-primary">
@@ -105,7 +113,8 @@ export function ExtensionShowcase() {
                 className="m-3 rounded-md px-2 py-1.5 text-[11.5px] leading-snug text-foreground/85"
                 style={{ background: "var(--highlight)" }}
               >
-                "Reduces redundancy and supports concurrent transactions while ensuring data integrity."
+                "Reduces redundancy and supports concurrent transactions while ensuring data
+                integrity."
               </div>
               <div className="space-y-1 px-2 pb-2">
                 <div className="flex items-center gap-2 rounded-md bg-secondary px-2 py-1.5 text-[11.5px]">
@@ -113,7 +122,7 @@ export function ExtensionShowcase() {
                   <span className="font-medium">AI Summary</span>
                   <span className="ml-auto text-[9.5px] text-muted-foreground">Generate</span>
                 </div>
-                <div className="flex items-center gap-2 rounded-md px-2 py-1.5 text-[11.5px] hover:bg-secondary">
+                <div className="flex items-center gap-2 rounded-md px-2 py-1.5 text-[11.5px]">
                   <BookmarkPlus className="h-3 w-3 text-muted-foreground" />
                   <span className="font-medium">Bookmark</span>
                   <span className="ml-auto text-[9.5px] text-muted-foreground">Save</span>
@@ -128,7 +137,7 @@ export function ExtensionShowcase() {
                 <p className="text-[11.5px] font-semibold">Bookmark to topic</p>
               </div>
               <div className="p-3">
-                <button className="mb-2 flex w-full items-center gap-2 rounded-md border border-dashed border-border px-2 py-1.5 text-[11px] text-primary hover:bg-secondary">
+                <button className="mb-2 flex w-full items-center gap-2 rounded-md border border-dashed border-border px-2 py-1.5 text-[11px] text-primary">
                   <FolderPlus className="h-3 w-3" />
                   Create new topic
                 </button>
@@ -138,22 +147,24 @@ export function ExtensionShowcase() {
                 <div className="space-y-0.5">
                   {[
                     { name: "DBMS", v: "--topic-dbms", active: true },
-                    { name: "Operating Systems", v: "--topic-os" },
-                    { name: "DSA", v: "--topic-dsa" },
-                    { name: "Computer Networks", v: "--topic-cn" },
-                    { name: "OOP", v: "--topic-oops" },
+                    { name: "Operating Systems", v: "--topic-os", active: false },
+                    { name: "DSA", v: "--topic-dsa", active: false },
+                    { name: "Computer Networks", v: "--topic-cn", active: false },
+                    { name: "OOP", v: "--topic-oops", active: false },
                   ].map((t) => (
                     <div
                       key={t.name}
                       className={`flex items-center gap-2 rounded-md px-2 py-1 text-[11px] ${
-                        t.active ? "bg-secondary" : "hover:bg-secondary/60"
+                        t.active ? "bg-secondary" : ""
                       }`}
                     >
                       <Hash className="h-2.5 w-2.5" style={{ color: `var(${t.v})` }} />
+
                       <span className="font-medium">{t.name}</span>
-                      {t.active ? (
+
+                      {t.active && (
                         <span className="ml-auto text-[9.5px] text-primary">Selected</span>
-                      ) : null}
+                      )}
                     </div>
                   ))}
                 </div>
@@ -171,7 +182,8 @@ export function ExtensionShowcase() {
               Install the StudySync extension
             </DialogTitle>
             <DialogDescription>
-              Follow these steps to add StudySync to any Chromium browser (Chrome, Edge, Brave, Arc).
+              Follow these steps to add StudySync to any Chromium browser (Chrome, Edge, Brave,
+              Arc).
             </DialogDescription>
           </DialogHeader>
           <ol className="mt-2 space-y-3">
@@ -188,7 +200,9 @@ export function ExtensionShowcase() {
                 <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-secondary text-[11px] font-semibold text-foreground">
                   {i + 1}
                 </span>
-                <span className="pt-0.5 text-[13px] leading-relaxed text-foreground/85">{step}</span>
+                <span className="pt-0.5 text-[13px] leading-relaxed text-foreground/85">
+                  {step}
+                </span>
               </li>
             ))}
           </ol>

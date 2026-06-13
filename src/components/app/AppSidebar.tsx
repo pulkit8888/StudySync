@@ -80,7 +80,7 @@ export function AppSidebar() {
               const to = `/topic/${t.slug}`;
               const active = pathname === to;
               return (
-                <Link
+            <Link
                   key={t.slug}
                   to="/topic/$slug"
                   params={{ slug: t.slug }}

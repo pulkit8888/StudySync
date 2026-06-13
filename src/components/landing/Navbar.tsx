@@ -12,12 +12,12 @@ export function Navbar() {
     >
       <div className="mx-auto mt-4 max-w-6xl px-4">
         <nav className="glass flex items-center justify-between rounded-2xl px-4 py-2.5 shadow-soft">
-          <Link to="/" className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-primary text-primary-foreground shadow-glow">
               <Brain className="h-4 w-4" strokeWidth={2.5} />
             </div>
             <span className="text-[15px] font-semibold tracking-tight">StudySync</span>
-          </Link>
+          </div>
           <div className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
             <a href="#features" className="transition-colors hover:text-foreground">Features</a>
             <a href="#extension" className="transition-colors hover:text-foreground">Extension</a>
