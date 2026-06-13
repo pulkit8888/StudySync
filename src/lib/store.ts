@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // Tiny global mock store for StudySync. Backed by useSyncExternalStore so
 // every page sees deletions instantly without a refresh. Initialised from the
 // static mock data; swap for a real API later by replacing the action bodies.

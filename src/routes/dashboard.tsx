@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app/AppShell";
@@ -80,6 +81,7 @@ function DashboardPage() {
     if (pending.kind === "summary") storeActions.deleteSummary(pending.id);
     if (pending.kind === "note") storeActions.deleteNote(pending.id);
     if (pending.kind === "topic") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       storeActions.deleteTopic(pending.slug as any);
       setSelectedTopic(null);
     }

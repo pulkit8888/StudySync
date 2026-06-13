@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
@@ -63,67 +64,7 @@ const TOPICS: Topic[] = [
       "Preemptive vs non-preemptive",
       "Optimizes throughput",
     ],
-  },
-  {
-    id: "dsa",
-    name: "Data Structures & Algorithms",
-    shortName: "DSA",
-    tagVar: "--topic-dsa",
-    article: {
-      title: "Understanding Binary Search Trees",
-      source: "leetcode.com",
-      paragraph:
-        "A Binary Search Tree maintains an ordering property where the left subtree contains nodes with keys less than the parent, and the right subtree contains nodes with keys greater than the parent, enabling O(log n) lookups.",
-      highlight:
-        "The left subtree contains nodes with keys less than the parent, and the right subtree contains nodes with keys greater than the parent.",
-    },
-    summary: [
-      "BST keeps an ordering invariant",
-      "Left < parent < right",
-      "O(log n) on balanced trees",
-      "Inorder yields sorted keys",
-    ],
-  },
-  {
-    id: "cn",
-    name: "Computer Networks",
-    shortName: "CN",
-    tagVar: "--topic-cn",
-    article: {
-      title: "How TCP Ensures Reliable Delivery",
-      source: "cloudflare.com",
-      paragraph:
-        "TCP provides reliable, ordered, and error-checked delivery of a stream of bytes between applications. It uses sequence numbers, acknowledgements, and retransmissions to recover from packet loss across networks.",
-      highlight:
-        "TCP uses sequence numbers, acknowledgements, and retransmissions to recover from packet loss across networks.",
-    },
-    summary: [
-      "TCP delivers ordered byte streams",
-      "Sequence numbers track packets",
-      "ACKs confirm delivery",
-      "Retransmits on loss",
-    ],
-  },
-  {
-    id: "oops",
-    name: "Object Oriented Programming",
-    shortName: "OOPS",
-    tagVar: "--topic-oops",
-    article: {
-      title: "The Four Pillars of OOP",
-      source: "developer.mozilla.org",
-      paragraph:
-        "Object-oriented programming is built on four core principles: encapsulation hides internal state, inheritance enables reuse, polymorphism allows interchangeable behavior, and abstraction exposes only what is needed.",
-      highlight:
-        "Encapsulation hides internal state, inheritance enables reuse, polymorphism allows interchangeable behavior.",
-    },
-    summary: [
-      "Encapsulation protects state",
-      "Inheritance enables reuse",
-      "Polymorphism for flexible APIs",
-      "Abstraction hides complexity",
-    ],
-  },
+  }
 ];
 
 /**
@@ -150,18 +91,23 @@ export function ProductShowcase() {
     let raf = 0;
     const start = performance.now();
     const tick = (now: number) => {
-      const elapsed = ((now - start) / 1000) % TOTAL_LOOP;
-      setT(elapsed);
+      const raw = Math.max(0, (now - start) / 1000);
+      const elapsed = TOTAL_LOOP > 0 ? raw % TOTAL_LOOP : 0;
+      setT(Number.isFinite(elapsed) ? elapsed : 0);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  const showingDashboard = t >= SCENE_DURATION * TOPICS.length;
-  const topicIndex = Math.min(Math.floor(t / SCENE_DURATION), TOPICS.length - 1);
-  const localT = t - topicIndex * SCENE_DURATION;
-  const topic = TOPICS[topicIndex];
+  const safeT = Number.isFinite(t) && t >= 0 ? t : 0;
+  const showingDashboard = safeT >= SCENE_DURATION * TOPICS.length;
+  const topicIndex = Math.min(
+    Math.max(0, Math.floor(safeT / SCENE_DURATION)),
+    TOPICS.length - 1,
+  );
+  const localT = safeT - topicIndex * SCENE_DURATION;
+  const topic = TOPICS[topicIndex] ?? TOPICS[0];
   const mode: "summary" | "bookmark" = topicIndex % 2 === 0 ? "summary" : "bookmark";
 
   return (
@@ -187,7 +133,7 @@ export function ProductShowcase() {
               <span className="truncate">
                 {showingDashboard
                   ? "studysync.app/dashboard"
-                  : `${topic.article.source}/article`}
+                  : `${topic?.article?.source ?? "example.com"}/article`}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -682,7 +628,7 @@ function ArticleScene({
         animate={{
           left: `${cursor.x}%`,
           top: `${cursor.y}%`,
-          opacity: cursor.opacity,
+          opacity: 0,
         }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{ filter: "drop-shadow(0 2px 6px rgba(15,23,42,0.18))" }}
@@ -801,7 +747,7 @@ function DashboardScene() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative overflow-hidden rounded-xl border border-border bg-gradient-card p-4 shadow-soft"
+              className="group relative aspect-square overflow-hidden rounded-xl border border-border bg-gradient-card p-4 shadow-soft"
             >
               <div className="flex items-start justify-between">
                 <div

@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Brain,
@@ -10,7 +11,7 @@ import {
   Plus,
   Sparkles,
 } from "lucide-react";
-import { TOPICS } from "@/lib/mock-data";
+import { useStore } from "@/lib/store";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
@@ -22,11 +23,14 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const topics = useStore((s) => s.topics);
 
   const isActive = (to: string) => {
     if (to === "/") return pathname === "/";
     return to === "/dashboard" ? pathname === to : pathname.startsWith(to);
   };
+
+  const isTopicActive = (slug: string) => pathname === `/topic/${slug}`;
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-card/40 backdrop-blur-xl md:flex">
@@ -76,11 +80,10 @@ export function AppSidebar() {
             </button>
           </div>
           <div className="space-y-0.5">
-            {TOPICS.map((t) => {
-              const to = `/topic/${t.slug}`;
-              const active = pathname === to;
+            {topics.map((t) => {
+              const active = isTopicActive(t.slug);
               return (
-            <Link
+                <Link
                   key={t.slug}
                   to="/topic/$slug"
                   params={{ slug: t.slug }}

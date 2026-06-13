@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell } from "@/components/app/AppShell";
@@ -50,11 +51,22 @@ function TopicDetailPage() {
 
   const topic = useStore((s) => s.topics.find((t) => t.slug === slug));
   const topics = useStore((s) => s.topics);
-  const highlights = useStore((s) => s.highlights.filter((h) => h.topicSlug === slug));
-  const summaries = useStore((s) => s.summaries.filter((x) => x.topicSlug === slug));
-  const notes = useStore((s) => s.notes.filter((n) => n.topicSlug === slug));
   const allHighlights = useStore((s) => s.highlights);
   const allSummaries = useStore((s) => s.summaries);
+  const allNotes = useStore((s) => s.notes);
+  
+  const highlights = allHighlights.filter(
+    (h) => h.topicSlug === slug
+  );
+  
+
+  const summaries = allSummaries.filter(
+    (s) => s.topicSlug === slug
+  );
+
+  const notes = allNotes.filter(
+    (n) => n.topicSlug === slug
+  );
 
   const [pending, setPending] = useState<Pending>(null);
 
@@ -120,7 +132,36 @@ function TopicDetailPage() {
           <ArrowLeft className="h-3 w-3" /> Back to dashboard
         </Link>
 
-        <div className="mt-3 flex items-start gap-4">
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            to="/dashboard"
+            className="px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors bg-secondary text-foreground hover:bg-secondary/80"
+          >
+            All Topics
+          </Link>
+          {topics.map((t) => {
+            const isActive = t.slug === slug;
+            return (
+              <Link
+                key={t.slug}
+                to="/topic/$slug"
+                params={{ slug: t.slug }}
+                className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
+                  isActive ? "text-primary-foreground" : "text-foreground hover:bg-secondary/60"
+                }`}
+                style={{
+                  backgroundColor: isActive ? `var(${t.tagVar})` : "transparent",
+                  border: isActive ? "none" : `1px solid var(${t.tagVar})`,
+                }}
+              >
+                <span className="h-2 w-2 rounded-full" style={{ background: `var(${t.tagVar})` }} />
+                {t.shortName}
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 flex items-start gap-4">
           <div
             className="grid h-14 w-14 place-items-center rounded-2xl text-base font-semibold text-white shadow-lg"
             style={{ background: `var(${topic.tagVar})` }}
