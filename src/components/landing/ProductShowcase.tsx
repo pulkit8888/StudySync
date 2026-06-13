@@ -187,9 +187,7 @@ export function ProductShowcase() {
               <span className="truncate">
                 {showingDashboard
                   ? "studysync.app/dashboard"
-                  : topic && topic.article
-                    ? `${topic.article.source}/article`
-                    : ""}
+                  : `${topic.article.source}/article`}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -205,12 +203,7 @@ export function ProductShowcase() {
               {showingDashboard ? (
                 <DashboardScene key="dashboard" />
               ) : (
-                <ArticleScene
-                  key={`topic-${topicIndex}`}
-                  topic={topic}
-                  localT={localT}
-                  mode={mode}
-                />
+                <ArticleScene key={`topic-${topicIndex}`} topic={topic} localT={localT} mode={mode} />
               )}
             </AnimatePresence>
 
@@ -278,7 +271,8 @@ function ArticleScene({
 
   // Saved highlight persists in topic color after either flow completes
   const savedHighlight =
-    (mode === "bookmark" && localT >= 10.5) || (mode === "summary" && localT >= 12.5);
+    (mode === "bookmark" && localT >= 10.5) ||
+    (mode === "summary" && localT >= 12.5);
 
   const [before, hl, after] = splitHighlight(topic.article.paragraph, topic.article.highlight);
 
@@ -286,12 +280,7 @@ function ArticleScene({
   // ACTUAL text regardless of topic / paragraph length / wrap.
   const stageRef = useRef<HTMLDivElement>(null);
   const hlRef = useRef<HTMLSpanElement>(null);
-  const [hlRect, setHlRect] = useState<{
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-  } | null>(null);
+  const [hlRect, setHlRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -363,6 +352,7 @@ function ArticleScene({
     }
   }
 
+
   return (
     <motion.div
       ref={stageRef}
@@ -378,10 +368,7 @@ function ArticleScene({
           className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium"
           style={{ color: `var(${topic.tagVar})` }}
         >
-          <span
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ background: `var(${topic.tagVar})` }}
-          />
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: `var(${topic.tagVar})` }} />
           {topic.shortName}
         </div>
         <h3 className="text-balance text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
@@ -417,13 +404,11 @@ function ArticleScene({
             {after}
           </p>
           <p className="text-pretty text-muted-foreground">
-            Modern systems abstract away the underlying storage so applications can focus on
-            business logic rather than low-level data wrangling.
+            Modern systems abstract away the underlying storage so applications can focus on business logic rather than low-level data wrangling.
           </p>
           <div className="mt-1 h-px bg-border" />
           <p className="text-pretty text-muted-foreground">
-            This trade-off between abstraction and performance has shaped decades of engineering
-            decisions and remains central to modern infrastructure.
+            This trade-off between abstraction and performance has shaped decades of engineering decisions and remains central to modern infrastructure.
           </p>
         </div>
       </div>
@@ -500,15 +485,9 @@ function ArticleScene({
                     >
                       <span
                         className="mt-1 grid h-3.5 w-3.5 shrink-0 place-items-center rounded-full"
-                        style={{
-                          background: `color-mix(in oklab, var(${topic.tagVar}) 18%, transparent)`,
-                        }}
+                        style={{ background: `color-mix(in oklab, var(${topic.tagVar}) 18%, transparent)` }}
                       >
-                        <Check
-                          className="h-2 w-2"
-                          style={{ color: `var(${topic.tagVar})` }}
-                          strokeWidth={3}
-                        />
+                        <Check className="h-2 w-2" style={{ color: `var(${topic.tagVar})` }} strokeWidth={3} />
                       </span>
                       {s}
                     </motion.li>
@@ -795,7 +774,9 @@ function DashboardScene() {
             >
               <span className="h-2 w-2 rounded-full" style={{ background: `var(${tp.tagVar})` }} />
               <span className="font-medium">{tp.shortName}</span>
-              <span className="ml-auto text-[10px] text-muted-foreground">{12 + i * 3}</span>
+              <span className="ml-auto text-[10px] text-muted-foreground">
+                {12 + i * 3}
+              </span>
             </motion.div>
           ))}
         </div>
