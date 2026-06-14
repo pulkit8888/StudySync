@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { TopBar } from "./TopBar";
+import { Toaster } from "@/components/ui/sooner";
 
 export function AppShell({
   children,
@@ -15,6 +16,7 @@ export function AppShell({
 }) {
   return (
     <div className="min-h-screen w-full bg-background">
+      <Toaster position="bottom-right" />
       <div className="flex min-h-screen">
         <AppSidebar />
         <div className="flex min-w-0 flex-1 flex-col">

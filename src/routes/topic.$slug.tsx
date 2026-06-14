@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app/AppShell";
 import { TopicChip } from "@/routes/dashboard";
 import { relativeTime, type TopicSlug } from "@/lib/mock-data";
 import { selectSources, storeActions, useStore } from "@/lib/store";
+import { topicColor } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -150,11 +151,11 @@ function TopicDetailPage() {
                   isActive ? "text-primary-foreground" : "text-foreground hover:bg-secondary/60"
                 }`}
                 style={{
-                  backgroundColor: isActive ? `var(${t.tagVar})` : "transparent",
-                  border: isActive ? "none" : `1px solid var(${t.tagVar})`,
+                  backgroundColor: isActive ? topicColor(t.tagVar) : "transparent",
+                  border: isActive ? "none" : `1px solid ${topicColor(t.tagVar)}`,
                 }}
               >
-                <span className="h-2 w-2 rounded-full" style={{ background: `var(${t.tagVar})` }} />
+                <span className="h-2 w-2 rounded-full" style={{ background: topicColor(t.tagVar) }} />
                 {t.shortName}
               </Link>
             );
@@ -164,7 +165,7 @@ function TopicDetailPage() {
         <div className="mt-4 flex items-start gap-4">
           <div
             className="grid h-14 w-14 place-items-center rounded-2xl text-base font-semibold text-white shadow-lg"
-            style={{ background: `var(${topic.tagVar})` }}
+            style={{ background: topicColor(topic.tagVar) }}
           >
             {topic.shortName.slice(0, 2)}
           </div>
@@ -262,7 +263,7 @@ function TopicDetailPage() {
                       <Trash2 className="h-3 w-3" />
                     </button>
                     <div className="flex items-center gap-2 pr-7">
-                      <Sparkles className="h-3.5 w-3.5" style={{ color: `var(${topic.tagVar})` }} />
+                      <Sparkles className="h-3.5 w-3.5" style={{ color: topicColor(topic.tagVar) }} />
                       <p className="text-[13px] font-semibold tracking-tight">{s.title}</p>
                       <span className="ml-auto rounded-full bg-secondary px-2 py-0.5 text-[10.5px] text-muted-foreground">
                         {s.bullets.length} points
@@ -276,7 +277,7 @@ function TopicDetailPage() {
                         >
                           <span
                             className="mt-1.5 h-1 w-1 shrink-0 rounded-full"
-                            style={{ background: `var(${topic.tagVar})` }}
+                            style={{ background: topicColor(topic.tagVar) }}
                           />
                           {b}
                         </li>
@@ -385,7 +386,7 @@ function TopicDetailPage() {
                     params={{ slug: t.slug }}
                     className="flex items-center gap-2 rounded-lg border border-border bg-card p-2 text-[12px] transition-colors hover:bg-secondary"
                   >
-                    <span className="h-2 w-2 rounded-full" style={{ background: `var(${t.tagVar})` }} />
+                    <span className="h-2 w-2 rounded-full" style={{ background: topicColor(t.tagVar) }} />
                     <span className="truncate font-medium">{t.shortName}</span>
                   </Link>
                 ))}

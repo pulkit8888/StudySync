@@ -4,6 +4,7 @@ import { AppShell } from "@/components/app/AppShell";
 import { TopicChip } from "@/routes/dashboard";
 import { relativeTime, type TopicSlug } from "@/lib/mock-data";
 import { storeActions, useStore } from "@/lib/store";
+import { topicColor } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -221,7 +222,7 @@ function FilterPill({
       }`}
     >
       {dotVar ? (
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: `var(${dotVar})` }} />
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: topicColor(dotVar) }} />
       ) : null}
       <span className="flex-1 truncate text-left font-medium">{label}</span>
       {typeof count === "number" ? (

@@ -4,6 +4,7 @@ import { AppShell } from "@/components/app/AppShell";
 import { TopicChip } from "@/routes/dashboard";
 import { relativeTime } from "@/lib/mock-data";
 import { useStore } from "@/lib/store";
+import { topicColor } from "@/lib/utils";
 import { Search as SearchIcon, Sparkles, Bookmark, PenLine, Globe, Hash } from "lucide-react";
 
 type Kind = "all" | "highlight" | "summary" | "note" | "topic" | "source";
@@ -211,7 +212,7 @@ function SearchPage() {
                 >
                   <div
                     className="grid h-9 w-9 place-items-center rounded-lg text-[12px] font-semibold text-white"
-                    style={{ background: `var(${t.tagVar})` }}
+                    style={{ background: topicColor(t.tagVar) }}
                   >
                     {t.shortName.slice(0, 2)}
                   </div>

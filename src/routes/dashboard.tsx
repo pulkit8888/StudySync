@@ -11,6 +11,7 @@ import {
   type Summary,
 } from "@/lib/mock-data";
 import { storeActions, useStore } from "@/lib/store";
+import { topicColor } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,7 +47,6 @@ type Pending =
   | { kind: "highlight"; id: string }
   | { kind: "summary"; id: string }
   | { kind: "note"; id: string }
-  | { kind: "topic"; slug: string }
   | null;
 
 function DashboardPage() {
@@ -57,34 +57,16 @@ function DashboardPage() {
   const activity = useStore((s) => s.activity);
 
   const [pending, setPending] = useState<Pending>(null);
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
 
-  // Filter data based on selected topic
-  const filteredHighlights = selectedTopic
-    ? highlights.filter((h) => h.topicSlug === selectedTopic)
-    : highlights;
-  const filteredSummaries = selectedTopic
-    ? summaries.filter((s) => s.topicSlug === selectedTopic)
-    : summaries;
-  const filteredNotes = selectedTopic ? notes.filter((n) => n.topicSlug === selectedTopic) : notes;
-  const filteredActivity = selectedTopic
-    ? activity.filter((a) => a.topicSlug === selectedTopic)
-    : activity;
-
-  const totalHighlights = filteredHighlights.length;
-  const totalSummaries = filteredSummaries.length;
-  const totalNotes = filteredNotes.length;
+  const totalHighlights = highlights.length;
+  const totalSummaries = summaries.length;
+  const totalNotes = notes.length;
 
   const confirm = () => {
     if (!pending) return;
     if (pending.kind === "highlight") storeActions.deleteHighlight(pending.id);
     if (pending.kind === "summary") storeActions.deleteSummary(pending.id);
     if (pending.kind === "note") storeActions.deleteNote(pending.id);
-    if (pending.kind === "topic") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      storeActions.deleteTopic(pending.slug as any);
-      setSelectedTopic(null);
-    }
     setPending(null);
   };
 
@@ -98,55 +80,13 @@ function DashboardPage() {
       desc: "Are you sure you want to delete this summary? This action cannot be undone.",
     },
     note: { title: "Delete this note?", desc: "Your note will be permanently removed." },
-    topic: {
-      title: "Delete this topic and all associated data?",
-      desc: "All highlights, summaries, notes, and sources linked to this topic will be permanently removed. This action cannot be undone.",
-    },
   };
-
-  const topicFilter = topics.find((t) => t.slug === selectedTopic);
 
   return (
     <AppShell
-      title={selectedTopic ? `${topicFilter?.name}` : "Welcome back, Aarav"}
-      subtitle={
-        selectedTopic
-          ? `Viewing ${topicFilter?.shortName} content`
-          : "Here's what's growing in your second brain."
-      }
+      title="Welcome back, Aarav"
+      subtitle="Here's what's growing in your second brain."
     >
-      {/* Topic Filter Buttons */}
-      <div className="mb-6 flex flex-wrap gap-2">
-        <button
-          onClick={() => setSelectedTopic(null)}
-          className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${
-            selectedTopic === null
-              ? "bg-primary text-primary-foreground"
-              : "bg-secondary text-foreground hover:bg-secondary/80"
-          }`}
-        >
-          All Topics
-        </button>
-        {topics.map((t) => (
-          <button
-            key={t.slug}
-            onClick={() => setSelectedTopic(t.slug)}
-            className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
-              selectedTopic === t.slug
-                ? "text-primary-foreground"
-                : "text-foreground hover:bg-secondary/60"
-            }`}
-            style={{
-              backgroundColor: selectedTopic === t.slug ? `var(${t.tagVar})` : "transparent",
-              border: selectedTopic === t.slug ? "none" : `1px solid var(${t.tagVar})`,
-            }}
-          >
-            <span className="h-2 w-2 rounded-full" style={{ background: `var(${t.tagVar})` }} />
-            {t.shortName}
-          </button>
-        ))}
-      </div>
-
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="Highlights" value={totalHighlights} icon={Bookmark} delta="+8 this week" />
         <Stat label="Summaries" value={totalSummaries} icon={Sparkles} delta="+5 this week" />
@@ -163,26 +103,20 @@ function DashboardPage() {
         <div className="space-y-5 lg:col-span-2">
           <GrowthCard />
           <RecentHighlights
-            items={filteredHighlights.slice(0, 4)}
+            items={highlights.slice(0, 4)}
             topics={topics}
             onDelete={(id) => setPending({ kind: "highlight", id })}
           />
           <RecentSummaries
-            items={filteredSummaries.slice(0, 3)}
+            items={summaries.slice(0, 3)}
             topics={topics}
             onDelete={(id) => setPending({ kind: "summary", id })}
           />
         </div>
         <div className="space-y-5">
-          <TopicStats
-            topics={topics}
-            selectedTopic={selectedTopic}
-            onSelectTopic={setSelectedTopic}
-            onDeleteTopic={(slug) => setPending({ kind: "topic", slug })}
-          />
-          <ActivityTimeline items={filteredActivity} topics={topics} />
+          <ActivityTimeline items={activity} topics={topics} />
           <RecentNotes
-            items={filteredNotes.slice(0, 3)}
+            items={notes.slice(0, 3)}
             topics={topics}
             onDelete={(id) => setPending({ kind: "note", id })}
           />
@@ -419,7 +353,7 @@ function RecentSummaries({
                   <Trash2 className="h-3 w-3" />
                 </button>
                 <div className="mb-2 flex items-center gap-1.5">
-                  <Sparkles className="h-3 w-3" style={{ color: `var(${topic.tagVar})` }} />
+                  <Sparkles className="h-3 w-3" style={{ color: topicColor(topic.tagVar) }} />
                   <TopicChip topic={topic} small />
                 </div>
                 <p className="pr-6 text-[12.5px] font-semibold tracking-tight">{s.title}</p>
@@ -431,7 +365,7 @@ function RecentSummaries({
                     >
                       <span
                         className="mt-1.5 h-1 w-1 shrink-0 rounded-full"
-                        style={{ background: `var(${topic.tagVar})` }}
+                        style={{ background: topicColor(topic.tagVar) }}
                       />
                       {b}
                     </li>
@@ -442,80 +376,6 @@ function RecentSummaries({
           })}
         </div>
       )}
-    </div>
-  );
-}
-
-function TopicStats({
-  topics,
-  selectedTopic,
-  onSelectTopic,
-  onDeleteTopic,
-}: {
-  topics: {
-    slug: string;
-    shortName: string;
-    tagVar: string;
-    highlightsCount: number;
-    summariesCount: number;
-    notesCount: number;
-  }[];
-  selectedTopic: string | null;
-  onSelectTopic: (slug: string | null) => void;
-  onDeleteTopic: (slug: string) => void;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-      <SectionHeader title="Topic statistics" />
-      <div className="space-y-2.5">
-        {topics.map((t) => {
-          const total = t.highlightsCount + t.summariesCount + t.notesCount;
-          const max = 60;
-          const pct = Math.min(100, Math.round((total / max) * 100));
-          const isSelected = selectedTopic === t.slug;
-          return (
-            <div
-              key={t.slug}
-              className={`rounded-lg p-2 transition-colors ${
-                isSelected ? "bg-secondary" : "hover:bg-secondary/50"
-              } group flex items-center gap-2`}
-            >
-              <button
-                onClick={() => onSelectTopic(isSelected ? null : t.slug)}
-                className="flex-1 text-left"
-              >
-                <div className="mb-1 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{ background: `var(${t.tagVar})` }}
-                    />
-                    <span className="text-[12.5px] font-medium">{t.shortName}</span>
-                  </div>
-                  <span className="text-[11px] tabular-nums text-muted-foreground">{total}</span>
-                </div>
-                <div className="h-1 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${pct}%`, background: `var(${t.tagVar})` }}
-                  />
-                </div>
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteTopic(t.slug);
-                }}
-                className="opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground hover:text-destructive p-1"
-                title="Delete topic"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          );
-        })}
-        {topics.length === 0 && <p className="text-[12px] text-muted-foreground">No topics yet.</p>}
-      </div>
     </div>
   );
 }
@@ -533,7 +393,7 @@ function ActivityTimeline({
       <ol className="relative ml-2 space-y-3 border-l border-border pl-4">
         {items.slice(0, 6).map((a) => {
           const topic = topics.find((t) => t.slug === a.topicSlug);
-          const color = topic ? `var(${topic.tagVar})` : "var(--muted-foreground)";
+          const color = topic ? topicColor(topic.tagVar) : "var(--muted-foreground)";
           return (
             <li key={a.id} className="relative">
               <span
@@ -615,9 +475,9 @@ export function TopicChip({
       className={`inline-flex items-center gap-1 rounded-full border border-border bg-card font-medium ${
         small ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-0.5 text-[10.5px]"
       }`}
-      style={{ color: `var(${topic.tagVar})` }}
+      style={{ color: topicColor(topic.tagVar) }}
     >
-      <span className="h-1 w-1 rounded-full" style={{ background: `var(${topic.tagVar})` }} />
+      <span className="h-1 w-1 rounded-full" style={{ background: topicColor(topic.tagVar) }} />
       {topic.shortName}
     </span>
   );

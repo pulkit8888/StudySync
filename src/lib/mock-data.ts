@@ -1,14 +1,15 @@
 // Centralized mock data for StudySync. Shape mirrors what a real API would return,
 // so pages can swap to live queries with minimal changes.
 
-export type TopicSlug = "dbms" | "os" | "dsa" | "cn" | "oops";
+export type TopicSlug = string;
 
 export type Topic = {
+  id?: string;
   slug: TopicSlug;
   name: string;
   shortName: string;
   description: string;
-  tagVar: string; // CSS var name for color
+  tagVar: string; // CSS var name or hex color
   highlightsCount: number;
   summariesCount: number;
   notesCount: number;
@@ -122,9 +123,9 @@ export const TOPICS: Topic[] = [
   },
 ];
 
-export const TOPICS_BY_SLUG: Record<TopicSlug, Topic> = TOPICS.reduce(
+export const TOPICS_BY_SLUG: Record<string, Topic> = TOPICS.reduce(
   (acc, t) => ({ ...acc, [t.slug]: t }),
-  {} as Record<TopicSlug, Topic>,
+  {} as Record<string, Topic>,
 );
 
 const src = (id: string, title: string, domain: string): Source => ({

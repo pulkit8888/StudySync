@@ -17,6 +17,15 @@ import {
   type Topic,
   type TopicSlug,
 } from "./mock-data";
+import {
+  appendStoredTopic,
+  loadStoredTopics,
+  removeStoredTopic,
+} from "./topic-storage";
+
+export type CreateTopicResult =
+  | { ok: true; topic: Topic }
+  | { ok: false; error: "empty" | "duplicate"; message: string };
 
 export type StoreState = {
   topics: Topic[];
@@ -35,14 +44,44 @@ let state: StoreState = recompute({
 });
 
 const listeners = new Set<() => void>();
+let storageHydrated = false;
+
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function mergeTopicsWithStored(): Topic[] {
+  const builtins = INITIAL_TOPICS.map((t) => ({ ...t }));
+  const builtinSlugs = new Set(builtins.map((t) => t.slug));
+  const stored = loadStoredTopics().filter((t) => !builtinSlugs.has(t.slug));
+  return [...builtins, ...stored];
+}
+
+function hydrateFromStorage() {
+  if (storageHydrated || typeof window === "undefined") return;
+  storageHydrated = true;
+  const merged = mergeTopicsWithStored();
+  const storedCount = merged.length - INITIAL_TOPICS.length;
+  if (storedCount === 0) return;
+  state = recompute({ ...state, topics: merged });
+  emit();
+}
+
 function emit() {
   for (const l of listeners) l();
 }
 function subscribe(l: () => void) {
+  hydrateFromStorage();
   listeners.add(l);
   return () => listeners.delete(l);
 }
 function getSnapshot() {
+  hydrateFromStorage();
   return state;
 }
 
@@ -93,6 +132,51 @@ function sourceStillUsed(s: StoreState, sourceId: string): boolean {
 }
 
 export const storeActions = {
+  createTopic(name: string, color: string): CreateTopicResult {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      return { ok: false, error: "empty", message: "Topic name is required." };
+    }
+
+    const normalized = trimmed.toLowerCase();
+    if (state.topics.some((t) => t.name.toLowerCase() === normalized)) {
+      return { ok: false, error: "duplicate", message: "A topic with this name already exists." };
+    }
+
+    let slug = slugify(trimmed);
+    if (!slug) {
+      return { ok: false, error: "empty", message: "Topic name is required." };
+    }
+    if (state.topics.some((t) => t.slug === slug)) {
+      slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
+    }
+
+    const topic: Topic = {
+      id: `t-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      slug,
+      name: trimmed,
+      shortName: trimmed,
+      description: "",
+      tagVar: color,
+      highlightsCount: 0,
+      summariesCount: 0,
+      notesCount: 0,
+      sourcesCount: 0,
+      updatedAt: new Date().toISOString(),
+    };
+
+    set((s) => ({
+      ...s,
+      topics: [...s.topics, topic],
+      activity: [
+        activityFor("topic", slug, "Created topic", trimmed),
+        ...s.activity,
+      ],
+    }));
+
+    appendStoredTopic(topic);
+    return { ok: true, topic };
+  },
   deleteHighlight(id: string) {
     set((s) => {
       const h = s.highlights.find((x) => x.id === id);
@@ -157,6 +241,7 @@ export const storeActions = {
     });
   },
   deleteTopic(slug: TopicSlug) {
+    const topic = state.topics.find((t) => t.slug === slug);
     set((s) => ({
       ...s,
       topics: s.topics.filter((t) => t.slug !== slug),
@@ -168,6 +253,9 @@ export const storeActions = {
         ...s.activity.filter((a) => a.topicSlug !== slug),
       ],
     }));
+    if (topic?.id) {
+      removeStoredTopic(topic.id);
+    }
   },
 };
 
@@ -175,7 +263,7 @@ export function useStore<T>(selector: (s: StoreState) => T): T {
   return useSyncExternalStore(
     subscribe,
     () => selector(getSnapshot()),
-    () => selector(getSnapshot()),
+    () => selector(state),
   );
 }
 
