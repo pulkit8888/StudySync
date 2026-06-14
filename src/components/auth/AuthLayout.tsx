@@ -17,7 +17,7 @@ export function AuthLayout({
     <div className="relative min-h-screen overflow-hidden bg-background">
       {/* Mesh background */}
       <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-hero" />
-      <div className="pointer-events-none absolute -top-32 left-1/2 -z-10 h-[480px] w-[820px] -translate-x-1/2 rounded-full bg-gradient-mesh opacity-50 blur-3xl" />
+      <div className="pointer-events-none absolute -top-32 left-1/2 -z-10 h-120 w-205 -translate-x-1/2 rounded-full bg-gradient-mesh opacity-50 blur-3xl" />
 
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <Link to="/" className="flex items-center gap-2">

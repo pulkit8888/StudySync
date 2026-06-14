@@ -5,6 +5,7 @@ import { TopicChip } from "@/routes/dashboard";
 import { relativeTime } from "@/lib/mock-data";
 import { useStore } from "@/lib/store";
 import { topicColor } from "@/lib/utils";
+import { storeActions } from "@/lib/store";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -223,7 +224,7 @@ function SearchPage() {
                       <Highlighted text={n.body} q={norm} />
                     </p>
                   }
-                  rightAction={<NoteCardMenu noteId={n.id} />}
+                  rightAction={<NoteCardMenu note={n} />}
                 />
               ))}
             </div>
@@ -234,26 +235,46 @@ function SearchPage() {
           <Group title="Topics" icon={Hash}>
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
               {topicHits.map((t) => (
-                <Link
-                  key={t.slug}
-                  to="/topic/$slug"
-                  params={{ slug: t.slug }}
-                  className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md"
-                >
-                  <div
-                    className="grid h-9 w-9 place-items-center rounded-lg text-[12px] font-semibold text-white"
-                    style={{ background: topicColor(t.tagVar) }}
-                  >
-                    {t.shortName.slice(0, 2)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[12.5px] font-semibold tracking-tight">
-                      <Highlighted text={t.shortName} q={norm} />
-                    </p>
-                    <p className="truncate text-[11px] text-muted-foreground">{t.name}</p>
-                  </div>
-                </Link>
-              ))}
+  <div
+    key={t.slug}
+    className="flex items-center gap-2 rounded-xl border border-border bg-card p-3 shadow-sm"
+  >
+    <Link
+      to="/topic/$slug"
+      params={{ slug: t.slug }}
+      className="flex min-w-0 flex-1 items-center gap-3"
+    >
+      <div
+        className="grid h-9 w-9 place-items-center rounded-lg text-[12px] font-semibold text-white"
+        style={{ background: topicColor(t.tagVar) }}
+      >
+        {t.shortName.slice(0, 2)}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="text-[12.5px] font-semibold tracking-tight">
+          <Highlighted text={t.shortName} q={norm} />
+        </p>
+        <p className="truncate text-[11px] text-muted-foreground">
+          {t.name}
+        </p>
+      </div>
+    </Link>
+
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+      onClick={() => {
+        if (confirm(`Delete topic "${t.name}"?`)) {
+          storeActions.deleteTopic(t.slug);
+        }
+      }}
+    >
+      <Trash2 className="h-4 w-4" />
+    </Button>
+  </div>
+))}
             </div>
           </Group>
         )}

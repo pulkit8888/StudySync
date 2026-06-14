@@ -1,0 +1,4 @@
+Implemented note storage/update in src/lib/note-storage.ts and storeActions.updateNote in src/lib/store.ts.
+Pending: Only UI wiring (✏️ Edit modal) across Search/Dashboard/Topic notes.
+Also fixed delete cascades for localStorage in store delete actions.
+Typecheck not run due to PowerShell command separator issue with '&&'.

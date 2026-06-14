@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,8 +13,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { storeActions } from "@/lib/store";
+import type { Note } from "@/lib/mock-data";
 
 function ConfirmDelete({
   title,
@@ -95,21 +97,87 @@ export function SummaryCardMenu({ summaryId }: { summaryId: string }) {
   );
 }
 
-export function NoteCardMenu({ noteId }: { noteId: string }) {
+export function NoteCardMenu({ note }: { note: any }) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(note.title);
+  const [body, setBody] = useState(note.body);
+
   return (
-    <ConfirmDelete
-      title="Delete Note?"
-      description="This action cannot be undone."
-      onConfirm={() => storeActions.deleteNote(noteId)}
-    >
+    <div className="flex items-center gap-1">
+      {/* Edit Button */}
       <Button
-        aria-label="Delete note"
+        aria-label="Edit note"
         variant="ghost"
         size="icon"
-        className="h-8 w-8 rounded-md text-destructive hover:bg-destructive/10"
+        className="h-8 w-8 rounded-md text-primary hover:bg-primary/10"
+        onClick={() => setOpen(true)}
       >
-        <Trash2 className="h-4 w-4" />
+        <Pencil className="h-4 w-4" />
       </Button>
-    </ConfirmDelete>
+
+      {/* Delete Button */}
+      <ConfirmDelete
+        title="Delete Note?"
+        description="This action cannot be undone."
+        onConfirm={() => storeActions.deleteNote(note.id)}
+      >
+        <Button
+          aria-label="Delete note"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-md text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </ConfirmDelete>
+
+      {/* Edit Dialog */}
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Edit Note</AlertDialogTitle>
+            <AlertDialogDescription>
+              Update your note details below.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-3">
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full rounded-md border p-2"
+              placeholder="Title"
+            />
+
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              className="min-h-30 w-full rounded-md border p-2"
+              placeholder="Note"
+            />
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+            <Button
+              onClick={() => {
+                storeActions.updateNote({
+                  id: note.id,
+                  title,
+                  body,
+                  topicSlug: note.topicSlug,
+                  createdAt: note.createdAt,
+                });
+
+                setOpen(false);
+              }}
+            >
+              Save
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }

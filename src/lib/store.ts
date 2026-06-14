@@ -37,6 +37,9 @@ import {
   loadStoredSavedSummaries,
 } from "./saved-summary-storage";
 
+import { loadStoredNotes, saveAllStoredNotes, upsertStoredNote, deleteStoredNote } from "./note-storage";
+
+
 
 
 
@@ -93,13 +96,16 @@ function hydrateFromStorage() {
 
   const loadedBookmarks = loadStoredBookmarks();
   const loadedSavedSummaries = loadStoredSavedSummaries();
+  const loadedNotes = loadStoredNotes();
 
   state = recompute({
     ...state,
     topics: storedCount === 0 ? state.topics : mergedTopics,
     bookmarks: loadedBookmarks,
     savedSummaries: loadedSavedSummaries,
+    notes: loadedNotes.length > 0 ? loadedNotes : state.notes,
   });
+
   emit();
 }
 
@@ -164,6 +170,7 @@ function sourceStillUsed(s: StoreState, sourceId: string): boolean {
 }
 
 export const storeActions = {
+
   createTopic(name: string, color: string): CreateTopicResult {
 
     const trimmed = name.trim();
@@ -250,6 +257,9 @@ export const storeActions = {
   },
 
   deleteNote(id: string) {
+    // localStorage cleanup
+    deleteStoredNote(id);
+
     set((s) => {
       const n = s.notes.find((x) => x.id === id);
       if (!n) return s;
@@ -260,7 +270,42 @@ export const storeActions = {
       };
     });
   },
+
+  updateNote(note: { id: string; title: string; body: string; topicSlug: TopicSlug; createdAt: string }) {
+    // Persist first so a refresh keeps edits
+    const next: Note = {
+      id: note.id,
+      topicSlug: note.topicSlug,
+      title: note.title,
+      body: note.body,
+      createdAt: note.createdAt,
+    } as any;
+    upsertStoredNote(next);
+
+    set((s) => {
+      const existing = s.notes.find((n) => n.id === note.id);
+      if (!existing) return s;
+      return {
+        ...s,
+        notes: s.notes.map((n) =>
+          n.id === note.id ? ({
+            ...n,
+            title: note.title,
+            body: note.body,
+            topicSlug: note.topicSlug,
+            updatedAt: new Date().toISOString() as any,
+          } as any) : n,
+        ),
+        activity: [
+          activityFor("note", note.topicSlug, "Updated note", note.title),
+          ...s.activity,
+        ],
+      };
+    });
+  },
+
   deleteSource(sourceId: string) {
+
     // localStorage cleanup for highlights/summaries that will be removed
     const highlightIdsToRemove = state.highlights.filter((h) => h.source.id === sourceId).map((h) => h.id);
     const bookmarks = loadStoredBookmarks();

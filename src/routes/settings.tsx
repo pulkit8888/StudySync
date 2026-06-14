@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell } from "@/components/app/AppShell";
 import { User, Palette, Sparkles, Lock, Bell, Check } from "lucide-react";
+import { AppSidebar } from "@/components/app/AppSidebar";
+import { useNavigate } from "@tanstack/react-router";   
+
 
 const SECTIONS = [
   { id: "profile", label: "Profile", icon: User },
@@ -14,17 +17,18 @@ const SECTIONS = [
 type SectionId = (typeof SECTIONS)[number]["id"];
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({
-    meta: [
-      { title: "Settings — StudySync" },
-      { name: "description", content: "Manage your StudySync preferences." },
-    ],
-  }),
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      tab: (search.tab as string) || "profile",
+    };
+  },
   component: SettingsPage,
 });
 
 function SettingsPage() {
-  const [section, setSection] = useState<SectionId>("profile");
+  const { tab = "profile" } = Route.useSearch();
+
+  const navigate = useNavigate();
 
   return (
     <AppShell title="Settings" subtitle="Manage your account, appearance, and AI preferences.">
@@ -32,11 +36,16 @@ function SettingsPage() {
         <nav className="space-y-0.5 rounded-xl border border-border bg-card p-2 shadow-sm">
           {SECTIONS.map((s) => {
             const Icon = s.icon;
-            const active = section === s.id;
+            const active = tab === s.id;
             return (
               <button
                 key={s.id}
-                onClick={() => setSection(s.id)}
+                onClick={() =>
+                  navigate({
+                    to: "/settings",
+                    search: { tab: s.id },
+                  })
+                }
                 className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-colors ${
                   active
                     ? "bg-secondary text-foreground"
@@ -51,11 +60,11 @@ function SettingsPage() {
         </nav>
 
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-          {section === "profile" && <ProfileSection />}
-          {section === "theme" && <AppearanceSection />}
-          {section === "ai" && <AISection />}
-          {section === "account" && <AccountSection />}
-          {section === "notifications" && <NotificationsSection />}
+          {tab === "profile" && <ProfileSection />}
+          {tab === "theme" && <AppearanceSection />}
+          {tab === "ai" && <AISection />}
+          {tab === "account" && <AccountSection />}
+          {tab === "notifications" && <NotificationsSection />}
         </div>
       </div>
     </AppShell>
@@ -300,15 +309,18 @@ function NotificationsSection() {
 
 function Toggle({ defaultOn = false }: { defaultOn?: boolean }) {
   const [on, setOn] = useState(defaultOn);
+
   return (
     <button
       onClick={() => setOn((v) => !v)}
-      className={`relative h-5 w-9 rounded-full transition-colors ${on ? "bg-primary" : "bg-secondary"}`}
+      className={`relative h-5 w-10 rounded-full transition-colors ${
+        on ? "bg-primary" : "bg-secondary"
+      }`}
       aria-pressed={on}
     >
       <span
-        className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
-          on ? "translate-x-4" : "translate-x-0.5"
+        className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+          on ? "translate-x-5" : "translate-x-0"
         }`}
       />
     </button>

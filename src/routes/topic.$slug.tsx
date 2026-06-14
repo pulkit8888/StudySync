@@ -6,6 +6,7 @@ import { TopicChip } from "@/routes/dashboard";
 import { relativeTime, type TopicSlug } from "@/lib/mock-data";
 import { selectSources, storeActions, useStore } from "@/lib/store";
 import { topicColor } from "@/lib/utils";
+import { Pencil } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +47,9 @@ type Pending =
   | null;
 
 function TopicDetailPage() {
+  const [editingNote, setEditingNote] = useState<any>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
   const params = Route.useParams();
   const navigate = useNavigate();
   const slug = params.slug as TopicSlug;
@@ -55,19 +59,12 @@ function TopicDetailPage() {
   const allHighlights = useStore((s) => s.highlights);
   const allSummaries = useStore((s) => s.summaries);
   const allNotes = useStore((s) => s.notes);
-  
-  const highlights = allHighlights.filter(
-    (h) => h.topicSlug === slug
-  );
-  
 
-  const summaries = allSummaries.filter(
-    (s) => s.topicSlug === slug
-  );
+  const highlights = allHighlights.filter((h) => h.topicSlug === slug);
 
-  const notes = allNotes.filter(
-    (n) => n.topicSlug === slug
-  );
+  const summaries = allSummaries.filter((s) => s.topicSlug === slug);
+
+  const notes = allNotes.filter((n) => n.topicSlug === slug);
 
   const [pending, setPending] = useState<Pending>(null);
 
@@ -92,12 +89,10 @@ function TopicDetailPage() {
 
   // Sources scoped to this topic
   const topicSources = Array.from(
-    new Map(
-      [
-        ...highlights.map((h) => [h.source.id, h.source] as const),
-        ...summaries.map((s) => [s.source.id, s.source] as const),
-      ],
-    ).values(),
+    new Map([
+      ...highlights.map((h) => [h.source.id, h.source] as const),
+      ...summaries.map((s) => [s.source.id, s.source] as const),
+    ]).values(),
   );
 
   const confirm = () => {
@@ -117,10 +112,19 @@ function TopicDetailPage() {
 
   const labels: Record<NonNullable<Pending>["kind"], { title: string; desc: string }> = {
     highlight: { title: "Delete this highlight?", desc: "The highlight will be removed." },
-    summary: { title: "Delete this summary?", desc: "Are you sure you want to delete this summary? This action cannot be undone." },
+    summary: {
+      title: "Delete this summary?",
+      desc: "Are you sure you want to delete this summary? This action cannot be undone.",
+    },
     note: { title: "Delete this note?", desc: "Your note will be permanently removed." },
-    source: { title: "Delete this source?", desc: "All highlights and summaries from this source will be removed." },
-    topic: { title: `Delete ${topic.shortName}?`, desc: "This permanently removes the topic and all its highlights, summaries, and notes." },
+    source: {
+      title: "Delete this source?",
+      desc: "All highlights and summaries from this source will be removed.",
+    },
+    topic: {
+      title: `Delete ${topic.shortName}?`,
+      desc: "This permanently removes the topic and all its highlights, summaries, and notes.",
+    },
   };
 
   return (
@@ -155,7 +159,10 @@ function TopicDetailPage() {
                   border: isActive ? "none" : `1px solid ${topicColor(t.tagVar)}`,
                 }}
               >
-                <span className="h-2 w-2 rounded-full" style={{ background: topicColor(t.tagVar) }} />
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ background: topicColor(t.tagVar) }}
+                />
                 {t.shortName}
               </Link>
             );
@@ -176,7 +183,9 @@ function TopicDetailPage() {
                 Updated {relativeTime(topic.updatedAt)}
               </span>
             </div>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{topic.name}</h1>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+              {topic.name}
+            </h1>
             <p className="mt-0.5 text-[13px] text-muted-foreground">{topic.description}</p>
           </div>
           <div className="hidden gap-2 sm:flex">
@@ -201,7 +210,9 @@ function TopicDetailPage() {
             placeholder={`Search inside ${topic.shortName}…`}
             className="h-7 flex-1 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/70"
           />
-          <kbd className="rounded border border-border bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">/</kbd>
+          <kbd className="rounded border border-border bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
+            /
+          </kbd>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
@@ -263,7 +274,10 @@ function TopicDetailPage() {
                       <Trash2 className="h-3 w-3" />
                     </button>
                     <div className="flex items-center gap-2 pr-7">
-                      <Sparkles className="h-3.5 w-3.5" style={{ color: topicColor(topic.tagVar) }} />
+                      <Sparkles
+                        className="h-3.5 w-3.5"
+                        style={{ color: topicColor(topic.tagVar) }}
+                      />
                       <p className="text-[13px] font-semibold tracking-tight">{s.title}</p>
                       <span className="ml-auto rounded-full bg-secondary px-2 py-0.5 text-[10.5px] text-muted-foreground">
                         {s.bullets.length} points
@@ -304,18 +318,34 @@ function TopicDetailPage() {
                 notes.map((n) => (
                   <div
                     key={n.id}
-                    className="group relative rounded-lg border border-border bg-card p-3 shadow-sm"
+                    className="group relative rounded-lg border border-border bg-card p-3"
                   >
-                    <button
-                      aria-label="Delete note"
-                      onClick={() => setPending({ kind: "note", id: n.id })}
-                      className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-md text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                    <p className="pr-6 text-[12.5px] font-semibold tracking-tight">{n.title}</p>
-                    <p className="mt-1 text-[11.5px] text-muted-foreground">{n.body}</p>
-                    <p className="mt-1.5 text-[10.5px] text-muted-foreground">{relativeTime(n.createdAt)}</p>
+                    {/* NOTE CONTENT */}
+                    <p className="text-[13px] font-semibold">{n.title}</p>
+                    <p className="mt-1 text-[12.5px] text-muted-foreground">{n.body}</p>
+
+                    {/* ACTIONS */}
+                    <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-all group-hover:opacity-100">
+                      <button
+                        aria-label="Edit note"
+                        onClick={() => {
+                          setEditingNote(n);
+                          setEditTitle(n.title);
+                          setEditBody(n.body);
+                        }}
+                        className="grid h-6 w-6 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </button>
+
+                      <button
+                        aria-label="Delete note"
+                        onClick={() => setPending({ kind: "note", id: n.id })}
+                        className="grid h-6 w-6 place-items-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -335,12 +365,7 @@ function TopicDetailPage() {
                     <div className="grid h-7 w-7 place-items-center rounded-md bg-secondary text-muted-foreground">
                       <Globe className="h-3.5 w-3.5" />
                     </div>
-                    <a
-                      href={s.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="min-w-0 flex-1"
-                    >
+                    <a href={s.url} target="_blank" rel="noreferrer" className="min-w-0 flex-1">
                       <p className="truncate font-medium text-foreground">{s.title}</p>
                       <p className="truncate text-[11px] text-muted-foreground">{s.domain}</p>
                     </a>
@@ -386,7 +411,10 @@ function TopicDetailPage() {
                     params={{ slug: t.slug }}
                     className="flex items-center gap-2 rounded-lg border border-border bg-card p-2 text-[12px] transition-colors hover:bg-secondary"
                   >
-                    <span className="h-2 w-2 rounded-full" style={{ background: topicColor(t.tagVar) }} />
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ background: topicColor(t.tagVar) }}
+                    />
                     <span className="truncate font-medium">{t.shortName}</span>
                   </Link>
                 ))}
@@ -399,7 +427,9 @@ function TopicDetailPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{pending ? labels[pending.kind].title : ""}</AlertDialogTitle>
-            <AlertDialogDescription>{pending ? labels[pending.kind].desc : ""}</AlertDialogDescription>
+            <AlertDialogDescription>
+              {pending ? labels[pending.kind].desc : ""}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -412,6 +442,43 @@ function TopicDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {editingNote && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="w-100 rounded-lg bg-card p-4">
+            <h2 className="font-semibold">Edit Note</h2>
+
+            <input
+              className="mt-3 w-full border p-2"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+            />
+
+            <textarea
+              className="mt-2 w-full border p-2"
+              value={editBody}
+              onChange={(e) => setEditBody(e.target.value)}
+            />
+
+            <div className="mt-3 flex justify-end gap-2">
+              <button onClick={() => setEditingNote(null)}>Cancel</button>
+
+              <button
+                onClick={() => {
+                  storeActions.updateNote({
+                    ...editingNote,
+                    title: editTitle,
+                    body: editBody,
+                  });
+
+                  setEditingNote(null);
+                }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
@@ -431,7 +498,9 @@ function Metric({
         <Icon className="h-4 w-4" />
       </div>
       <div>
-        <p className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+        <p className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
         <p className="text-lg font-semibold tabular-nums leading-none text-foreground">{value}</p>
       </div>
     </div>
