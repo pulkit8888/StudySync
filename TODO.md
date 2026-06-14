@@ -1,9 +1,22 @@
-# STUDY SYNC - TODO
+# TODO - StudySync UI actions for Search cards
 
-- [x] Implement Dashboard → Topics delete button functionality with full cascading deletion and UI updates.
+## Implementation steps
 
-- [ ] Reuse existing store deleteTopic logic; ensure it removes topic + highlights + summaries + notes + sources (embedded) + bookmarks (if separate) + stats.
-- [ ] Add confirmation dialog wording: “Delete topic 'DBMS'?” + explanation of removed entities.
-- [ ] If the deleted topic is currently selected, switch dashboard view to "All Topics".
-- [ ] Provide success/error toasts (or inline error UI if no toast system exists).
-- [ ] Verify TypeScript build/lint.
+- [ ] Remove all non-Delete actions from Search card menus.
+  - [ ] Update `src/routes/search-actions.tsx` to keep ONLY Delete for Highlight/Summary/Note.
+- [ ] Fix overlapping Search card UI by removing/altering absolute rightAction placement.
+  - [ ] Update `src/routes/search.tsx` (`ResultCard`) to place delete button in-flow on the right.
+- [ ] Update store delete logic to also update localStorage and cascade removals.
+  - [ ] Update `src/lib/store.ts`
+    - [ ] `deleteHighlight` removes related bookmarks from localStorage.
+    - [ ] `deleteSummary` removes related saved summaries from localStorage.
+    - [ ] `deleteTopic` removes related highlights/summaries/notes + bookmarks/saved summaries.
+    - [ ] `deleteSource` removes related highlights/summaries + bookmarks/saved summaries.
+- [ ] Add Delete buttons for Topic and Source items in Search results.
+  - [ ] Update `src/routes/search.tsx` to render delete controls for Topic and Source search results.
+- [ ] Run typecheck/build.
+- [ ] Manual verification:
+  - [ ] No overlap in Search cards.
+  - [ ] Only trash delete actions appear for Highlights/Summaries/Notes.
+  - [ ] Topic delete removes topic + all related entities incl. bookmarks/saved summaries.
+  - [ ] Source delete removes related entities incl. bookmarks/saved summaries.

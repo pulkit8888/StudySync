@@ -16,12 +16,29 @@ import {
   type Summary,
   type Topic,
   type TopicSlug,
+  type Bookmark,
+  type SavedSummary,
 } from "./mock-data";
+
 import {
   appendStoredTopic,
   loadStoredTopics,
   removeStoredTopic,
 } from "./topic-storage";
+
+import {
+  loadStoredBookmarks,
+  saveAllStoredBookmarks,
+} from "./bookmark-storage";
+
+import {
+  deleteStoredSavedSummariesBySummaryId,
+  deleteStoredSavedSummariesByTopicSlug,
+  loadStoredSavedSummaries,
+} from "./saved-summary-storage";
+
+
+
 
 export type CreateTopicResult =
   | { ok: true; topic: Topic }
@@ -32,8 +49,11 @@ export type StoreState = {
   highlights: Highlight[];
   summaries: Summary[];
   notes: Note[];
+  bookmarks: Bookmark[];
+  savedSummaries: SavedSummary[];
   activity: Activity[];
 };
+
 
 let state: StoreState = recompute({
   topics: INITIAL_TOPICS.map((t) => ({ ...t })),
@@ -41,6 +61,8 @@ let state: StoreState = recompute({
   summaries: [...INITIAL_SUMMARIES],
   notes: [...INITIAL_NOTES],
   activity: [...INITIAL_ACTIVITY],
+  bookmarks: [],
+  savedSummaries: []
 });
 
 const listeners = new Set<() => void>();
@@ -65,12 +87,22 @@ function mergeTopicsWithStored(): Topic[] {
 function hydrateFromStorage() {
   if (storageHydrated || typeof window === "undefined") return;
   storageHydrated = true;
-  const merged = mergeTopicsWithStored();
-  const storedCount = merged.length - INITIAL_TOPICS.length;
-  if (storedCount === 0) return;
-  state = recompute({ ...state, topics: merged });
+
+  const mergedTopics = mergeTopicsWithStored();
+  const storedCount = mergedTopics.length - INITIAL_TOPICS.length;
+
+  const loadedBookmarks = loadStoredBookmarks();
+  const loadedSavedSummaries = loadStoredSavedSummaries();
+
+  state = recompute({
+    ...state,
+    topics: storedCount === 0 ? state.topics : mergedTopics,
+    bookmarks: loadedBookmarks,
+    savedSummaries: loadedSavedSummaries,
+  });
   emit();
 }
+
 
 function emit() {
   for (const l of listeners) l();
@@ -133,6 +165,7 @@ function sourceStillUsed(s: StoreState, sourceId: string): boolean {
 
 export const storeActions = {
   createTopic(name: string, color: string): CreateTopicResult {
+
     const trimmed = name.trim();
     if (!trimmed) {
       return { ok: false, error: "empty", message: "Topic name is required." };
@@ -178,10 +211,16 @@ export const storeActions = {
     return { ok: true, topic };
   },
   deleteHighlight(id: string) {
+    // 1) delete from localStorage (bookmarks)
+    const bookmarks = loadStoredBookmarks();
+    const toKeep = bookmarks.filter((b) => b.highlightId !== id);
+    saveAllStoredBookmarks(toKeep);
+
+    // 2) delete from store
     set((s) => {
       const h = s.highlights.find((x) => x.id === id);
       if (!h) return s;
-      const next: StoreState = {
+      return {
         ...s,
         highlights: s.highlights.filter((x) => x.id !== id),
         activity: [
@@ -189,11 +228,13 @@ export const storeActions = {
           ...s.activity,
         ],
       };
-      // No-op: sourceStillUsed check is implicit (sources live on records)
-      return next;
     });
   },
+
   deleteSummary(id: string) {
+    // delete from localStorage (saved summaries)
+    deleteStoredSavedSummariesBySummaryId(id);
+
     set((s) => {
       const sm = s.summaries.find((x) => x.id === id);
       if (!sm) return s;
@@ -207,6 +248,7 @@ export const storeActions = {
       };
     });
   },
+
   deleteNote(id: string) {
     set((s) => {
       const n = s.notes.find((x) => x.id === id);
@@ -219,6 +261,14 @@ export const storeActions = {
     });
   },
   deleteSource(sourceId: string) {
+    // localStorage cleanup for highlights/summaries that will be removed
+    const highlightIdsToRemove = state.highlights.filter((h) => h.source.id === sourceId).map((h) => h.id);
+    const bookmarks = loadStoredBookmarks();
+    saveAllStoredBookmarks(bookmarks.filter((b) => !highlightIdsToRemove.includes(b.highlightId)));
+
+    const summaryIdsToRemove = state.summaries.filter((s) => s.source.id === sourceId).map((s) => s.id);
+    summaryIdsToRemove.forEach((id) => deleteStoredSavedSummariesBySummaryId(id));
+
     set((s) => {
       const sample =
         s.highlights.find((h) => h.source.id === sourceId)?.source ||
@@ -240,8 +290,19 @@ export const storeActions = {
       return next;
     });
   },
+
   deleteTopic(slug: TopicSlug) {
     const topic = state.topics.find((t) => t.slug === slug);
+
+    // localStorage cleanup
+    // - saved summaries for this topic
+    deleteStoredSavedSummariesByTopicSlug(slug);
+    // - bookmarks for highlights that belong to this topic
+    const bookmarks = loadStoredBookmarks();
+    const highlightIdsInTopic = new Set(state.highlights.filter((h) => h.topicSlug === slug).map((h) => h.id));
+    const toKeepBookmarks = bookmarks.filter((b) => !highlightIdsInTopic.has(b.highlightId));
+    saveAllStoredBookmarks(toKeepBookmarks);
+
     set((s) => ({
       ...s,
       topics: s.topics.filter((t) => t.slug !== slug),
@@ -253,10 +314,12 @@ export const storeActions = {
         ...s.activity.filter((a) => a.topicSlug !== slug),
       ],
     }));
+
     if (topic?.id) {
       removeStoredTopic(topic.id);
     }
   },
+
 };
 
 export function useStore<T>(selector: (s: StoreState) => T): T {

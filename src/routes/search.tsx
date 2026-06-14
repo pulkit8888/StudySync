@@ -5,7 +5,43 @@ import { TopicChip } from "@/routes/dashboard";
 import { relativeTime } from "@/lib/mock-data";
 import { useStore } from "@/lib/store";
 import { topicColor } from "@/lib/utils";
-import { Search as SearchIcon, Sparkles, Bookmark, PenLine, Globe, Hash } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import {
+  Ellipsis,
+  Pencil,
+  Trash2,
+  Sparkles,
+  Search as SearchIcon,
+  PenLine,
+  Globe,
+  Hash,
+  BookmarkIcon,
+} from "lucide-react";
+
+import {
+  deleteStoredBookmark,
+  loadStoredBookmarks,
+  saveAllStoredBookmarks,
+} from "@/lib/bookmark-storage";
+import { loadStoredSavedSummaries, saveAllStoredSavedSummaries } from "@/lib/saved-summary-storage";
+import { HighlightCardMenu, NoteCardMenu, SummaryCardMenu } from "./search-actions";
 
 type Kind = "all" | "highlight" | "summary" | "note" | "topic" | "source";
 
@@ -47,10 +83,7 @@ function SearchPage() {
   const noteHits = useMemo(
     () =>
       NOTES.filter(
-        (n) =>
-          !norm ||
-          n.title.toLowerCase().includes(norm) ||
-          n.body.toLowerCase().includes(norm),
+        (n) => !norm || n.title.toLowerCase().includes(norm) || n.body.toLowerCase().includes(norm),
       ),
     [NOTES, norm],
   );
@@ -58,9 +91,7 @@ function SearchPage() {
     () =>
       TOPICS.filter(
         (t) =>
-          !norm ||
-          t.name.toLowerCase().includes(norm) ||
-          t.shortName.toLowerCase().includes(norm),
+          !norm || t.name.toLowerCase().includes(norm) || t.shortName.toLowerCase().includes(norm),
       ),
     [TOPICS, norm],
   );
@@ -69,13 +100,9 @@ function SearchPage() {
     HIGHLIGHTS.forEach((h) => map.set(h.source.id, h.source));
     SUMMARIES.forEach((s) => map.set(s.source.id, s.source));
     return Array.from(map.values()).filter(
-      (s) =>
-        !norm ||
-        s.title.toLowerCase().includes(norm) ||
-        s.domain.toLowerCase().includes(norm),
+      (s) => !norm || s.title.toLowerCase().includes(norm) || s.domain.toLowerCase().includes(norm),
     );
   }, [HIGHLIGHTS, SUMMARIES, norm]);
-
 
   const total =
     highlightHits.length +
@@ -142,7 +169,7 @@ function SearchPage() {
       {/* Results */}
       <div className="mt-5 space-y-6">
         {(kind === "all" || kind === "highlight") && highlightHits.length > 0 && (
-          <Group title="Highlights" icon={Bookmark}>
+          <Group title="Highlights" icon={BookmarkIcon}>
             <div className="space-y-2.5">
               {highlightHits.slice(0, 6).map((h) => (
                 <ResultCard
@@ -150,6 +177,7 @@ function SearchPage() {
                   topicSlug={h.topicSlug}
                   meta={`${h.source.domain} · ${relativeTime(h.createdAt)}`}
                   body={<Highlighted text={h.text} q={norm} />}
+                  rightAction={<HighlightCardMenu highlightId={h.id} />}
                 />
               ))}
             </div>
@@ -174,6 +202,7 @@ function SearchPage() {
                       ))}
                     </ul>
                   }
+                  rightAction={<SummaryCardMenu summaryId={s.id} />}
                 />
               ))}
             </div>
@@ -194,6 +223,7 @@ function SearchPage() {
                       <Highlighted text={n.body} q={norm} />
                     </p>
                   }
+                  rightAction={<NoteCardMenu noteId={n.id} />}
                 />
               ))}
             </div>
@@ -294,23 +324,31 @@ function ResultCard({
   meta,
   title,
   body,
+  rightAction,
 }: {
   topicSlug: string;
   meta: string;
   title?: string;
   body: React.ReactNode;
+  rightAction?: React.ReactNode;
 }) {
   const topic = useStore((s) => s.topics.find((t) => t.slug === topicSlug));
   if (!topic) return null;
+
   return (
     <div className="rounded-xl border border-border bg-card p-3.5 shadow-sm">
-      <div className="mb-1.5 flex items-center gap-2">
+      <div className="mb-1.5 flex items-start gap-2">
         <TopicChip topic={topic} small />
-        <span className="ml-auto text-[11px] text-muted-foreground">{meta}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-muted-foreground">{meta}</span>
+          </div>
+        </div>
+
+        {rightAction ? <div className="shrink-0">{rightAction}</div> : null}
       </div>
-      {title ? (
-        <p className="mb-1 text-[12.5px] font-semibold tracking-tight">{title}</p>
-      ) : null}
+
+      {title ? <p className="mb-1 text-[12.5px] font-semibold tracking-tight">{title}</p> : null}
       <div className="text-[12.5px] leading-relaxed text-foreground/85">{body}</div>
     </div>
   );

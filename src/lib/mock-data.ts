@@ -51,6 +51,21 @@ export type Note = {
   createdAt: string;
 };
 
+export type Bookmark = {
+  id: string;
+  highlightId: string;
+  topicSlug: TopicSlug;
+  createdAt: string;
+};
+
+export type SavedSummary = {
+  id: string;
+  summaryId: string;
+  topicSlug: TopicSlug;
+  createdAt: string;
+};
+
+
 export type Activity = {
   id: string;
   kind: "highlight" | "summary" | "note" | "topic";
